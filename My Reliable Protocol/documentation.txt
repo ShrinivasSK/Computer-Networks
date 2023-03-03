@@ -1,0 +1,74 @@
+Commands:
+    - make lib        -- Command to compile library
+    - make exec       -- Command to make executable files
+user1 and user2 will be generated. Those can be executed using ./user1 and ./user2 respectively.
+
+Struct messageSentStruct:
+    - int acknowledgement                     -- acknowledgement number of the message sent
+    - time_t time                             -- Time when the message was sent
+    - char message[MSG_SIZE]                  -- message sent
+    - int messageSize                         -- Size of the message
+    - struct sockaddr *dest_addr              -- Address to which the message was sent
+    - socklen_t addrlen                       -- addrlen of the destination address
+
+Struct messageReceivedStruct:
+    - char message[MSG_SIZE]                  -- message received
+    - int messageSize                         -- size of the message received
+    - int indexToBeRead                       -- index from where message to be read by the user
+    - struct messageReceivedStruct *next      -- pointer to the next message
+
+
+An array of struct messageSentStruct is constructed to store the messages that was sent.
+A pointer of struct messageReceivedStruct is used to store the messages received ( linked list)
+
+Functions:
+1) void initialiseTable():
+    - The function that assigns the default values to the table.
+
+2) int dropMessage(float p):
+    - Function takes an float number as input.
+    - It generates an random float number and compare it with the number passed.
+    - If the generated number is smaller than p, return 1, else return 0
+
+3) void *R(void *arg)
+    - Address of sockfd variable is passed as reference.
+    - It keeps on reading messages received to the sockfd passed and do the needful
+
+3) void *S(void *arg)
+    - Address of sockfd variable is passed as reference.
+    - The function checks for unack'ed messages in the table.
+    - If the time ppassed is greater than a certain value, the function resends the message.
+
+4) int r_socket(int domain, int type, int protocol):
+    - The Function checks if the type is SOCK_MRF
+    - if it is, then it creates a socket and return sockfd
+
+5) int r_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen):
+    - Function creates the threads, bind the socket to the port.
+
+6) ssize_t r_sendto(int sockfd, const void *buf, size_t len, int flags,struct sockaddr *dest_addr, socklen_t addrlen):
+    - The function finds an empty location in the unack'ed message table , updates it and send the message
+
+7) ssize_t r_recvfrom(int sockfd, void *buf, size_t len, int flags,struct sockaddr *src_addr, socklen_t *addrlen):
+    - The function keeps on checking the received message table after a certain period of time.
+    - If the table is not empty, the function returns the message and update the table.
+
+8) int r_close(int fd)
+    - Function to close the communication channel and clear the memory
+    - It clears the received message table, stops the threads and closes the sockfd
+
+RESULTS
+---------------------------------------------------------------------------------------------------------------------|
+P       |  Average Transmissions 1      | Average Transmissions 2  | Average Transmissions 3 |      Average          | 
+---------------------------------------------------------------------------------------------------------------------|
+0.05    |           100/40              |            80/40         |          92/40          |          91/40        |
+0.10    |           104/40              |            102/40        |          106/40         |          104/40       |
+0.15    |           96/40               |            107/40        |          94/40          |          102/40       |
+0.20    |           88/40               |            92/40         |          110/40         |          97/40        |
+0.25    |           93/40               |            108/40        |          102/40         |          101/40       |
+0.30    |           126/40              |            100/40        |          104/40         |          110/40       |
+0.35    |           102/40              |            110/40        |          116/40         |          109/40       |
+0.40    |           116/40              |            120/40        |          107/40         |          114/40       |  
+0.45    |           114/40              |            110/40        |          102/40         |          109/40       |
+0.50    |           88/40               |            104/40        |          124/40         |          105/40       |
+---------------------------------------------------------------------------------------------------------------------|
